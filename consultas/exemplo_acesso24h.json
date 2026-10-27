@@ -1,0 +1,8 @@
+{
+  "inicio": "2026-01",
+  "fim": "2026-04",
+  "indicador": "ate24_pct",
+  "agrupar": ["macro_origem", "macro_destino", "leito"],
+  "filtros": {"eletiva": ["Não"]},
+  "busca": ""
+}

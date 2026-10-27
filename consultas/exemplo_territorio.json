@@ -1,0 +1,8 @@
+{
+  "inicio": "2025-01",
+  "fim": "2025-12",
+  "indicador": "internacoes",
+  "agrupar": ["macro_destino", "micro_destino", "municipio_destino", "procedimento"],
+  "filtros": {},
+  "busca": ""
+}
