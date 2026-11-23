@@ -1,0 +1,61 @@
+name: Publicar Observatório
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Obter código
+        uses: actions/checkout@v4
+
+      - name: Montar site público a partir da raiz
+        run: |
+          set -euo pipefail
+          test -f index.html
+          test -f dados/manifest.json
+          mkdir -p _site
+          cp index.html _site/index.html
+          cp -R assets _site/assets
+          cp -R dados _site/dados
+          touch _site/.nojekyll
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('_site/dados')
+          m=json.loads((p/'manifest.json').read_text(encoding='utf-8'))
+          assert m.get('modo')=='publico', 'Manifesto não é público'
+          for part in m['particoes']:
+              f=p/part['arquivo']
+              assert f.is_file(), f'Partição ausente: {f}'
+              values=json.loads(f.read_text(encoding='utf-8'))
+              assert isinstance(values,list), f'Formato inválido: {f}'
+          print('Site preparado:',len(m['particoes']),'partições públicas')
+          PY
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Enviar site público
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+      - name: Publicar
+        id: deployment
+        uses: actions/deploy-pages@v4
