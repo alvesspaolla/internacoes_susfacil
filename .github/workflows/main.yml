@@ -1,4 +1,9 @@
-name: Publicar painel
+
+
+
+
+
+name: Publicar Observatório
 
 on:
   push:
@@ -20,19 +25,52 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
     steps:
       - name: Obter código
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
-      - name: Configurar Pages
+      - name: Montar site público a partir da raiz
+        run: |
+          set -euo pipefail
+          test -f index.html
+          test -f dados/manifest.json
+          grep -q "Coordenação de Gestão da Informação e Transparência" index.html
+          mkdir -p _site
+          cp index.html _site/index.html
+          cp -R assets _site/assets
+          cp -R dados _site/dados
+          touch _site/.nojekyll
+          printf "GitHub Pages | origem: index.html (raiz) | commit: %s\n" "$GITHUB_SHA" > _site/versao-publicacao.txt
+          grep -q "CGIT" _site/index.html
+          echo "CONFIRMADO: _site/index.html contém CGIT"
+          sha256sum index.html _site/index.html
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('_site/dados')
+          m=json.loads((p/'manifest.json').read_text(encoding='utf-8'))
+          assert m.get('modo')=='publico', 'Manifesto não é público'
+          for part in m['particoes']:
+              f=p/part['arquivo']
+              assert f.is_file(), f'Partição ausente: {f}'
+              values=json.loads(f.read_text(encoding='utf-8'))
+              assert isinstance(values,list), f'Formato inválido: {f}'
+          print('Site preparado:',len(m['particoes']),'partições públicas')
+          PY
+
+      - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Preparar painel
+      - name: Enviar site público
         uses: actions/upload-pages-artifact@v4
         with:
-          path: painel
+          path: _site
 
       - name: Publicar
         id: deployment
         uses: actions/deploy-pages@v4
+
+
+
+
+
