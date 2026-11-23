@@ -24,7 +24,33 @@ jobs:
       - name: Obter código
         uses: actions/checkout@v4
 
-      - name: Montar site público a partir da raiz
+     name: Publicar Observatório
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Obter código
+        uses: actions/checkout@v4
+
+        name: Montar site público a partir da raiz
         run: |
           set -euo pipefail
           test -f index.html
