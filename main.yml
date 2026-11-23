@@ -24,42 +24,21 @@ jobs:
       - name: Obter código
         uses: actions/checkout@v4
 
-     name: Publicar Observatório
-
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
-jobs:
-  publicar:
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Obter código
-        uses: actions/checkout@v4
-
-        name: Montar site público a partir da raiz
+      - name: Montar site público a partir da raiz
         run: |
           set -euo pipefail
           test -f index.html
           test -f dados/manifest.json
+          grep -q "Coordenação de Gestão da Informação e Transparência" index.html
           mkdir -p _site
           cp index.html _site/index.html
           cp -R assets _site/assets
           cp -R dados _site/dados
           touch _site/.nojekyll
+          printf "GitHub Pages | origem: index.html (raiz) | commit: %s\n" "$GITHUB_SHA" > _site/versao-publicacao.txt
+          grep -q "CGIT" _site/index.html
+          echo "CONFIRMADO: _site/index.html contém CGIT"
+          sha256sum index.html _site/index.html
           python - <<'PY'
           import json
           from pathlib import Path
