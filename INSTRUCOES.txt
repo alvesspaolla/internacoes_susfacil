@@ -1,0 +1,5 @@
+ATUALIZACAO DO LAYOUT DO OBSERVATORIO
+
+Substitua somente o index.html na raiz do repositorio e envie os 4 arquivos da pasta assets.
+Mantenha dados/, .github/workflows/main.yml e painel/ sem alterar.
+O site usa os JSONs publicos atuais em dados/; CID, origem e modalidade nao estao disponiveis.
