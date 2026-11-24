@@ -16,50 +16,54 @@ concurrency:
 
 jobs:
   preparar:
-    name: Preparar e enviar site
+    name: Preparar e validar arquivos
     runs-on: ubuntu-latest
     steps:
       - name: Obter código
         uses: actions/checkout@v4
-
-      - name: Montar site público a partir da raiz
+      - name: Verificar estrutura original
         shell: bash
         run: |
           set -euo pipefail
           test -s index.html
-          test -s dados/manifest.json
-          grep -q 'Coordenação de Gestão da Informação e Transparência' index.html
+          test -s dados/manifest.json || { echo "ERRO: dados/manifest.json ausente na branch main"; exit 1; }
+          test -s assets/brasao-mg.png
+          test -s assets/sus.png
+      - name: Montar site público a partir da raiz
+        shell: bash
+        run: |
+          set -euo pipefail
           rm -rf _site
           mkdir -p _site
           cp index.html _site/index.html
           cp -R assets _site/assets
           cp -R dados _site/dados
           touch _site/.nojekyll
-          printf 'origem: index.html (raiz)\ncommit: %s\n' "$GITHUB_SHA" > _site/versao-publicacao.txt
+          printf 'origem: raiz\ncommit: %s\n' "$GITHUB_SHA" > _site/versao-publicacao.txt
           python - <<'PYVALID'
-          import json
           from pathlib import Path
-          root = Path('_site')
-          meta = json.loads((root/'dados/manifest.json').read_text(encoding='utf-8'))
-          assert meta['modo'] == 'publico', 'Somente agregados públicos podem ir ao Pages'
-          for item in meta['particoes']:
-              path = root/'dados'/item['arquivo']
-              assert path.is_file(), f'Partição ausente: {path}'
-              assert isinstance(json.loads(path.read_text(encoding='utf-8')), list)
-          for img in ('core.png','susfacil.jpeg','brasao-mg.png','sus.png'):
-              assert (root/'assets'/img).is_file(), f'Imagem ausente: {img}'
-          print(f"VALIDADO: {len(meta['particoes'])} partições públicas e quatro logomarcas")
+          import json
+          root=Path('_site')
+          meta=json.loads((root/'dados/manifest.json').read_text(encoding='utf-8'))
+          assert meta['modo']=='publico', 'Não publicar agregados restritos'
+          assert len(meta['particoes'])==16, 'Esperadas 16 partições de 2025-01 a 2026-04'
+          count=0
+          for p in meta['particoes']:
+              f=root/'dados'/p['arquivo']
+              assert f.is_file(),f'Falta {f}'
+              rows=json.loads(f.read_text(encoding='utf-8'))
+              assert isinstance(rows,list),f'Dados inválidos: {f}'
+              count+=len(rows)
+          for asset in ['core.png','susfacil.jpeg','brasao-mg.png','sus.png']:
+              assert (root/'assets'/asset).is_file(),f'Falta assets/{asset}'
+          print(f'PUBLICAÇÃO VALIDADA: 16 meses e {count} células agregadas')
           PYVALID
-          find _site -maxdepth 2 -type f | sort | head -35
-
-      - name: Configurar Pages
+      - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
-
       - name: Enviar artefato github-pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
-
   publicar:
     name: Publicar site
     needs: preparar
