@@ -1,0 +1,30 @@
+# Bases originais e resultados privados
+/dados/
+/fontes/
+/privado/
+/exports/
+/relatorios_privados/
+
+*.sqlite
+*.sqlite-*
+*.sqlite.novo
+*.db
+*.csv
+*.xlsx
+*.xls
+*.parquet
+*.zip
+*.log
+
+# Ambiente Python e configurações locais
+__pycache__/
+.venv/
+.env
+.openai/
+
+# Nunca publicar bases ou agregados restritos
+*_local_restrito.json
+*.xlsx
+*.xls
+*.csv
+_site/

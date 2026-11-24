@@ -1,44 +1,73 @@
 name: Publicar Observatório
+
 on:
   push:
     branches: [main]
   workflow_dispatch:
+
 permissions:
   contents: read
   pages: write
   id-token: write
+
 concurrency:
   group: pages
   cancel-in-progress: false
+
 jobs:
-  publicar:
+  preparar:
+    name: Preparar e enviar site
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Obter código
         uses: actions/checkout@v4
+
       - name: Montar site público a partir da raiz
         shell: bash
         run: |
           set -euo pipefail
           test -s index.html
           test -s dados/manifest.json
+          grep -q 'Coordenação de Gestão da Informação e Transparência' index.html
           rm -rf _site
           mkdir -p _site
           cp index.html _site/index.html
+          cp -R assets _site/assets
           cp -R dados _site/dados
-          if [ -d assets ]; then cp -R assets _site/assets; fi
           touch _site/.nojekyll
           printf 'origem: index.html (raiz)\ncommit: %s\n' "$GITHUB_SHA" > _site/versao-publicacao.txt
-          ls -lah _site
-      - name: Configurar GitHub Pages
+          python - <<'PYVALID'
+          import json
+          from pathlib import Path
+          root = Path('_site')
+          meta = json.loads((root/'dados/manifest.json').read_text(encoding='utf-8'))
+          assert meta['modo'] == 'publico', 'Somente agregados públicos podem ir ao Pages'
+          for item in meta['particoes']:
+              path = root/'dados'/item['arquivo']
+              assert path.is_file(), f'Partição ausente: {path}'
+              assert isinstance(json.loads(path.read_text(encoding='utf-8')), list)
+          for img in ('core.png','susfacil.jpeg','brasao-mg.png','sus.png'):
+              assert (root/'assets'/img).is_file(), f'Imagem ausente: {img}'
+          print(f"VALIDADO: {len(meta['particoes'])} partições públicas e quatro logomarcas")
+          PYVALID
+          find _site -maxdepth 2 -type f | sort | head -35
+
+      - name: Configurar Pages
         uses: actions/configure-pages@v5
-      - name: Enviar site público
+
+      - name: Enviar artefato github-pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
-      - name: Publicar
+
+  publicar:
+    name: Publicar site
+    needs: preparar
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar no GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
