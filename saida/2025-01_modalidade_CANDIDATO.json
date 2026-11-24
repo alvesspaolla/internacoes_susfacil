@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "periodo": "2025-01",
+  "fonte": "SUSfácilMG — internações realizadas",
+  "status": "CANDIDATO_A_PUBLICACAO_SUJEITO_VALIDACAO",
+  "dimensoes": [
+    "mes",
+    "modalidade"
+  ],
+  "indicador": "internacoes_realizadas",
+  "criterios": [
+    "Situação contém INTERNAÇÃO REALIZADA",
+    "Nº da Internação duplicado descartado quando presente",
+    "Internação Eletiva=SIM é eletiva; NÃO é urgência; outros valores são não informada"
+  ],
+  "registros": [
+    [
+      "2025-01",
+      "eletiva",
+      19531
+    ],
+    [
+      "2025-01",
+      "urgencia",
+      99661
+    ]
+  ],
+  "total": 119192
+}

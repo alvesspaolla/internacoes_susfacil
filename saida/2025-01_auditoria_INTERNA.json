@@ -1,0 +1,45 @@
+{
+  "mes": "2025-01",
+  "contagens": {
+    "linhas_lidas": 119256,
+    "realizadas": 119192,
+    "nao_realizadas": 64
+  },
+  "modalidade": {
+    "urgencia": 99661,
+    "eletiva": 19531
+  },
+  "modalidade_desconhecida": {},
+  "consistencia": {
+    "modalidades_somam_realizadas": true,
+    "origens_somam_realizadas": true,
+    "cids_somam_realizadas": true
+  },
+  "risco_de_divulgacao": {
+    "cid": {
+      "grupos": 5071,
+      "grupos_com_1_a_4": 2896,
+      "grupos_com_5_a_19": 1316,
+      "menor_contagem": 1
+    },
+    "origem": {
+      "grupos": 822,
+      "grupos_com_1_a_4": 152,
+      "grupos_com_5_a_19": 272,
+      "menor_contagem": 1
+    },
+    "origem_destino": {
+      "grupos": 3118,
+      "grupos_com_1_a_4": 1887,
+      "grupos_com_5_a_19": 693,
+      "menor_contagem": 1
+    },
+    "procedimento": {
+      "grupos": 1336,
+      "grupos_com_1_a_4": 521,
+      "grupos_com_5_a_19": 378,
+      "menor_contagem": 1
+    }
+  },
+  "politica": "CID, origem e fluxos NÃO são exportados neste pacote. Necessária avaliação de células pequenas, cruzamentos, margens e ataques por diferença antes de publicar em repositório aberto."
+}

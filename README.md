@@ -1,26 +1,28 @@
-# Observatório de Regulação Assistencial · SUSfácilMG
+# Observatório Regulação Assistencial — Gerador v3 (etapa 1)
 
-Interface de consulta dos **agregados públicos preexistentes**, organizados por mês (janeiro/2025 a abril/2026). Setor responsável: **CGIT — Coordenação de Gestão da Informação e Transparência**.
+Este pacote processa localmente planilhas originais de internações SUSfácilMG (.xlsx) e cria:
 
-## Publicação no GitHub Pages
+- `saida/2025-01_modalidade_CANDIDATO.json`: **candidato** a agregado público mensal com Urgência/Eletiva, sem dimensão territorial ou CID.
+- `saida/2025-01_auditoria_INTERNA.json`: documento de auditoria e diagnóstico de células pequenas. Não publicar sem revisão institucional.
+- `gerar_camadas_observatorio.py`: gerador Python só com biblioteca padrão. Não lê nem publica nome/CPF.
 
-1. Crie um repositório ou faça o upload do conteúdo **desta pasta** para a raiz de seu repositório do observatório.
-2. Em **Settings → Pages → Build and deployment**, escolha **Deploy from a branch**, `main` e `/ (root)`.
-3. Acesse a URL gerada pelo GitHub Pages. Pode levar alguns minutos até o primeiro deploy aparecer.
+## Reproduzir
 
-Para testar localmente: `python -m http.server 8000` e abra `http://localhost:8000`.
+`python gerar_camadas_observatorio.py "internações realizadas 2025-01(6).xlsx" --out saida`
 
-## Cobertura, segurança e limitações
+## Critérios e resultados de janeiro de 2025
 
-- O painel consulta apenas os dados já classificados como `modo: publico` no `dados/manifest.json`, com mínimo de cinco internações por célula.
-- A supressão simples de células pequenas **não é garantia suficiente de privacidade** quando há múltiplos filtros e cruzamentos. Antes de divulgação institucional, revisar supressão complementar, riscos de diferença entre consultas e autorização para publicação dos agregados existentes.
-- Esses totais são parciais; não podem ser tratados como total estadual de internações.
-- Não há nos JSONs públicos CID, origem, residência ou modalidade. Os controles correspondentes não são apresentados como funcionais.
-- Não publicar as planilhas originais, dados pessoais ou o novo agregado `*_local_restrito.json`.
-- O gerador em `tools/` é para execução local restrita, não produz dados públicos prontos para publicação.
-- Módulo CORE Saúde MG ainda não integrado.
-- Logos foram incluídas a partir dos arquivos fornecidos para o protótipo; confirmar uso institucional antes de divulgação oficial.
+- Situação contendo `INTERNAÇÃO REALIZADA` (com ou sem acento).
+- Deduplicação por `Nº da Internação` quando preenchido.
+- `Internação Eletiva = SIM` → eletiva; `NÃO` → urgência; demais casos → não informada.
+- 119.256 linhas; 64 descartadas por situação; 119.192 internações realizadas.
+- 99.661 urgências; 19.531 eletivas; soma confere.
 
-## Atualização
+## Limitações e cautelas
 
-Atualize `dados/manifest.json` e as partições mensais públicas preservando o esquema descrito no manifesto. Valide totais, os indicadores e a política de divulgação antes de substituir arquivos públicos.
+- Critério de internação realizada e interpretação de modalidade devem ser homologados pela área gestora.
+- A versão pública do GitHub Pages expõe os JSONs a qualquer visitante. Nenhuma restrição visual no navegador impede baixar esses arquivos.
+- Os cruzamentos origem×destino e CID precisam de avaliação de risco de divulgação (células pequenas, totais, consultas sobrepostas e cálculo por diferença); não são exportados aqui.
+- Para distribuição de microdados ou cruzamentos completos, use hospedagem institucional com autenticação e autorização.
+- Para atualizar todos os meses, são necessárias as respectivas planilhas originais; os JSONs antigos só possuem destino e procedimento.
+- Não substitua o `manifest.json` público existente por este pacote; a integração da nova dimensão depende de atualização coordenada do front-end e homologação.
