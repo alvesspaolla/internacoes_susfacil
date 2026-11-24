@@ -1,0 +1,82 @@
+name: Publicar Observatório
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  actions: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Obter código
+        uses: actions/checkout@v4
+
+      - name: Montar site público a partir da raiz
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f index.html
+          test -f dados/manifest.json
+          mkdir -p _site
+          cp index.html _site/index.html
+          test -d assets && cp -R assets _site/assets
+          cp -R dados _site/dados
+          touch _site/.nojekyll
+          printf 'origem: index.html (raiz)\ncommit: %s\n' "$GITHUB_SHA" > _site/versao-publicacao.txt
+          echo 'Conteúdo pronto para publicação:'
+          find _site -maxdepth 2 -type f | head -25
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('_site/dados')
+          meta=json.loads((root/'manifest.json').read_text(encoding='utf-8'))
+          assert meta.get('modo') == 'publico', 'O manifesto não é público!'
+          for p in meta['particoes']:
+              assert (root/p['arquivo']).is_file(), p['arquivo']
+          print('Partições públicas conferidas:', len(meta['particoes']))
+          PY
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Enviar artefato do site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Conferir artefato antes de publicar
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          for tentativa in 1 2 3 4 5 6; do
+            echo "Verificando artefato github-pages (tentativa $tentativa/6)..."
+            if gh api "repos/$REPO/actions/runs/$RUN_ID/artifacts" --jq '.artifacts[] | select(.name=="github-pages" and .expired==false) | .id' | grep -q '[0-9]'; then
+              echo 'Artefato github-pages encontrado.'
+              exit 0
+            fi
+            sleep 5
+          done
+          echo 'ERRO: o artefato github-pages não está visível nesta execução.' >&2
+          exit 1
+
+      - name: Publicar
+        id: deployment
+        uses: actions/deploy-pages@v4
