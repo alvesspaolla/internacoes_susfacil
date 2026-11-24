@@ -1,0 +1,26 @@
+{
+  "arquivo": "internações realizadas 2025-01(6).xlsx",
+  "contagens": {
+    "linhas_lidas": 119256,
+    "internacoes_realizadas": 119192,
+    "residencia_destino_diferentes": 43863,
+    "modalidade_urgencia": 99661,
+    "origem_solicitante_destino_diferentes": 17488,
+    "modalidade_eletiva": 19531,
+    "situacao_nao_realizada": 64,
+    "duplicidade_numero_internacao_descartada": 0
+  },
+  "situacoes": {
+    "9-INTERNAÇÃO REALIZADA": 119192,
+    "5-SOLICITAÇÃO CANCELADA": 64
+  },
+  "valores_modalidade_desconhecidos": {},
+  "celulas_agregadas": 74383,
+  "observacoes": [
+    "CPF e nome não são lidos; pessoas distintas não calculadas.",
+    "CID e procedimento originais mantidos para validar código/descrição.",
+    "Origem solicitante, residência e destino são conceitos diferentes.",
+    "Este é um agregado local, não adequado para publicação sem análise de risco de divulgação.",
+    "Séries mensais e tempos devem ser revalidados antes de generalizar o processamento."
+  ]
+}
