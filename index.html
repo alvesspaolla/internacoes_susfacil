@@ -8,6 +8,28 @@
 <div class="sidebar-bottom"><strong>CGIT</strong> — Coordenação de Gestão da Informação e Transparência<br>Minas Gerais · Regulação Assistencial<br><br>Fonte pública parcial · SUSfácilMG</div></aside>
 <div class="page"><header class="topbar"><span class="crumb">MINAS GERAIS &nbsp; / &nbsp; INTELIGÊNCIA EM SAÚDE</span><div class="partners"><span class="partner"><img src="assets/core.png" alt="CORE MG"></span><i class="partner-division"></i><span class="partner"><img class="gov" src="assets/brasao-mg.png" alt="Brasão de Minas Gerais" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><strong style="display:none;font-size:10px">MINAS GERAIS</strong></span><i class="partner-division"></i><span class="partner"><img class="sus" src="assets/sus.png" alt="SUS" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><strong style="display:none;color:#334f9e">SUS</strong></span><i class="partner-division"></i><span class="partner"><img src="assets/susfacil.jpeg" alt="SUSfácilMG"></span><i class="partner-division"></i><div class="owner-top">CGIT<br><span style="font-weight:500">Coordenação de Gestão da Informação e Transparência</span></div></div></header>
 <main class="content" id="explorar"><section id="mainView" class="nav-view current"><div class="intro"><div><div class="overline">EXPLORADOR DE INDICADORES</div><h1>Uma base. Muitas perguntas.</h1><p>Compare destinos, procedimentos e indicadores de internação nos agregados públicos do SUSfácilMG.</p></div><span class="pill">CONSULTA PÚBLICA · DADOS REAIS PARCIAIS</span></div>
+
+<section class="panel" id="analiseLocal" style="margin:14px 0 20px;border:2px solid #86cfc5;padding:18px">
+ <div class="panel-header"><div><h2>Origem × destino · análise local restrita</h2><p class="hint">Carregue o JSON local gerado a partir da base original. O arquivo é processado apenas neste navegador e não é enviado ao GitHub.</p></div><span class="tiny-tag">MODO LOCAL</span></div>
+ <div class="field" style="margin-bottom:13px"><label for="localFile">Selecionar arquivo *_local_restrito.json</label><input id="localFile" type="file" accept=".json,application/json" style="max-width:100%;padding:8px;border:1px solid #dce6eb;border-radius:8px" /></div>
+ <div id="localStatus" role="status" style="margin-bottom:12px;color:#486174">Nenhum arquivo local carregado. A análise pública continua disponível abaixo.</div>
+ <div class="territory-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:9px;margin-bottom:12px">
+  <div class="field"><label for="localMacroO">Macro de origem</label><select id="localMacroO" disabled><option value="">Todas</option></select></div>
+  <div class="field"><label for="localOrigem">Município de origem solicitante</label><select id="localOrigem" disabled><option value="">Todos</option></select></div>
+  <div class="field"><label for="localDestino">Município de destino</label><select id="localDestino" disabled><option value="">Todos</option></select></div>
+  <div class="field"><label for="localModalidade">Modalidade</label><select id="localModalidade" disabled><option value="">Todas</option></select></div>
+ </div>
+ <div class="territory-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px;margin-bottom:12px">
+  <div class="field"><label for="localCid">CID: código ou lista (linhas, vírgulas)</label><textarea id="localCid" rows="3" placeholder="I63
+J18" disabled style="width:100%;border:1px solid #dce6eb;border-radius:8px;padding:10px"></textarea></div>
+  <div class="field"><label for="localProc">Procedimento: código ou lista</label><textarea id="localProc" rows="3" placeholder="0303040149" disabled style="width:100%;border:1px solid #dce6eb;border-radius:8px;padding:10px"></textarea></div>
+ </div>
+ <button class="btn" id="localApply" disabled>Aplicar filtros locais</button>
+ <button class="btn secondary" id="localExport" disabled>Exportar resumo CSV</button>
+ <div id="localMetrics" style="margin:14px 0;font-weight:700"></div>
+ <div class="table-scroll"><table class="data-table"><thead><tr><th>Origem (IBGE)</th><th>Destino (IBGE)</th><th>Internações</th></tr></thead><tbody id="localRows"></tbody></table></div>
+ <p class="hint" style="margin-top:12px">Os municípios são exibidos por código IBGE conforme o agregado. A análise corresponde apenas aos meses carregados; o arquivo de janeiro não deve ser interpretado como a série completa.</p>
+</section>
 <div class="notice"><strong>Nota de cobertura:</strong> os arquivos públicos não incluem origem, CID ou modalidade e omitem células com menos de cinco internações. Os totais não representam necessariamente todas as internações.</div>
 <section class="panel"><div class="panel-header"><h2>Recorte da análise</h2><button type="button" class="linkbtn" id="clearTop">Limpar filtros</button></div>
 <div class="filter-top"><div class="field"><label for="from">De</label><select id="from"></select></div><div class="field"><label for="to">Até</label><select id="to"></select></div><div class="field"><label for="indicator">Indicador</label><select id="indicator"><option value="internacoes">Internações nas células publicadas</option><option value="espera">Tempo médio de espera (h)</option><option value="ate24">Internações em até 24h (%)</option><option value="permanencia">Permanência média (dias)</option></select></div><div class="field"><label for="group">Agrupar ranking por</label><select id="group"><option value="city">Município de destino</option><option value="proc">Procedimento</option><option value="macro">Macrorregião de destino</option></select></div></div>
@@ -43,4 +65,39 @@ $('macro').addEventListener('change',updateCities);$('micro').addEventListener('
 function switchView(view){$('mainView').classList.toggle('current',view==='main');$('methodView').classList.toggle('current',view==='method');$('navExplore').classList.toggle('active',view==='main');$('navMethod').classList.toggle('active',view==='method')}
 $('navExplore').addEventListener('click',()=>switchView('main'));$('navMethod').addEventListener('click',()=>switchView('method'));$('backExplore').addEventListener('click',()=>{switchView('main');location.hash='explorar'});
 load();
-</script></body></html>
+</script>
+<script>
+(()=>{
+ const el=id=>document.getElementById(id), ids=['localMacroO','localOrigem','localDestino','localModalidade','localCid','localProc','localApply'];
+ let rows=[], fields=[], summary=[];
+ const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
+ const setOptions=(id,values)=>{let s=el(id); s.replaceChildren(new Option(id==='localModalidade'?'Todas':'Todos',''));for(let v of [...new Set(values)].sort())s.add(new Option(v,v));};
+ const terms=id=>el(id).value.split(/[\n,;\t]+/).map(norm).filter(Boolean);
+ function filter(){
+  let idx=Object.fromEntries(fields.map((f,i)=>[f,i]));let tCID=terms('localCid'),tProc=terms('localProc');
+  const filtered=rows.filter(r=> (!el('localMacroO').value||r[idx.macro_origem]===el('localMacroO').value)&&(!el('localOrigem').value||r[idx.municipio_origem_solicitante]===el('localOrigem').value)&&(!el('localDestino').value||r[idx.municipio_destino]===el('localDestino').value)&&(!el('localModalidade').value||r[idx.modalidade]===el('localModalidade').value)&&(!tCID.length||tCID.some(t=>norm(r[idx.cid]).startsWith(t)))&&(!tProc.length||tProc.some(t=>norm(r[idx.procedimento]).startsWith(t))));
+  let count=0,map=new Map();for(let r of filtered){let n=Number(r[idx.internacoes])||0;count+=n;let key=JSON.stringify([r[idx.municipio_origem_solicitante],r[idx.municipio_destino]]);map.set(key,(map.get(key)||0)+n)}
+  summary=[...map].map(([k,n])=>[...JSON.parse(k),n]).sort((a,b)=>b[2]-a[2]);
+  el('localMetrics').textContent=`${count.toLocaleString('pt-BR')} internações no recorte · ${summary.length.toLocaleString('pt-BR')} fluxos origem/destino`;
+  let tb=el('localRows');tb.replaceChildren();for(let r of summary.slice(0,100)){let tr=document.createElement('tr');for(let value of [r[0],r[1],r[2].toLocaleString('pt-BR')]){let td=document.createElement('td');td.textContent=value;tr.append(td)}tb.append(tr)};
+  el('localExport').disabled=summary.length===0;
+ }
+ el('localFile').addEventListener('change',async e=>{try{
+  const file=e.target.files?.[0];if(!file)return;
+  if(file.size>100*1024*1024)throw Error('Arquivo maior que 100 MB; processe em lotes menores.');
+  let data=JSON.parse(await file.text());
+  if(data.schema!==2||data.modo!=='local_restrito'||!Array.isArray(data.campos)||!Array.isArray(data.registros))throw Error('Formato incompatível: selecione um agregado local restrito v2.');
+  const required=['modalidade','cid','procedimento','municipio_origem_solicitante','municipio_destino','macro_origem','internacoes'];
+  if(required.some(x=>!data.campos.includes(x)))throw Error('Campos de origem/destino ausentes.');
+  fields=data.campos;rows=data.registros;let ix=Object.fromEntries(fields.map((f,i)=>[f,i]));
+  setOptions('localMacroO',rows.map(r=>r[ix.macro_origem]));setOptions('localOrigem',rows.map(r=>r[ix.municipio_origem_solicitante]));setOptions('localDestino',rows.map(r=>r[ix.municipio_destino]));setOptions('localModalidade',rows.map(r=>r[ix.modalidade]));
+  for(let id of ids)el(id).disabled=false;
+  el('localStatus').textContent=`Arquivo local carregado: ${file.name} · ${rows.length.toLocaleString('pt-BR')} células · dados mantidos neste navegador.`;
+  filter();
+ }catch(err){rows=[];for(let id of ids)el(id).disabled=true;el('localStatus').textContent='Erro: '+err.message;}});
+ el('localApply').addEventListener('click',filter);
+ el('localMacroO').addEventListener('change',()=>{const i=fields.indexOf('macro_origem'),j=fields.indexOf('municipio_origem_solicitante');let match=rows.filter(r=>!el('localMacroO').value||r[i]===el('localMacroO').value);setOptions('localOrigem',match.map(r=>r[j]));});
+ el('localExport').addEventListener('click',()=>{const csv='\ufeffOrigem IBGE;Destino IBGE;Internações\r\n'+summary.map(r=>r.join(';')).join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='fluxos_origem_destino_local.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)});
+})();
+</script>
+</body></html>

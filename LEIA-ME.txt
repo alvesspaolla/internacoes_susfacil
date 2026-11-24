@@ -1,0 +1,1 @@
+Substitua index.html na raiz e .github/workflows/main.yml. Preserve dados/ e assets/. Para origem, carregue SOMENTE NO NAVEGADOR dados_v2/2025-01_local_restrito.json do pacote privado anterior. NUNCA envie esse arquivo ao GitHub público.

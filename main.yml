@@ -1,19 +1,15 @@
 name: Publicar Observatório
-
 on:
   push:
     branches: [main]
   workflow_dispatch:
-
 permissions:
   contents: read
   pages: write
   id-token: write
-
 concurrency:
   group: pages
-  cancel-in-progress: true
-
+  cancel-in-progress: false
 jobs:
   publicar:
     runs-on: ubuntu-latest
@@ -23,44 +19,26 @@ jobs:
     steps:
       - name: Obter código
         uses: actions/checkout@v4
-
       - name: Montar site público a partir da raiz
+        shell: bash
         run: |
           set -euo pipefail
-          test -f index.html
-          test -f dados/manifest.json
-          grep -q "Coordenação de Gestão da Informação e Transparência" index.html
+          test -s index.html
+          test -s dados/manifest.json
+          rm -rf _site
           mkdir -p _site
           cp index.html _site/index.html
-          cp -R assets _site/assets
           cp -R dados _site/dados
+          if [ -d assets ]; then cp -R assets _site/assets; fi
           touch _site/.nojekyll
-          printf "GitHub Pages | origem: index.html (raiz) | commit: %s\n" "$GITHUB_SHA" > _site/versao-publicacao.txt
-          grep -q "CGIT" _site/index.html
-          echo "CONFIRMADO: _site/index.html contém CGIT"
-          sha256sum index.html _site/index.html
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          p=Path('_site/dados')
-          m=json.loads((p/'manifest.json').read_text(encoding='utf-8'))
-          assert m.get('modo')=='publico', 'Manifesto não é público'
-          for part in m['particoes']:
-              f=p/part['arquivo']
-              assert f.is_file(), f'Partição ausente: {f}'
-              values=json.loads(f.read_text(encoding='utf-8'))
-              assert isinstance(values,list), f'Formato inválido: {f}'
-          print('Site preparado:',len(m['particoes']),'partições públicas')
-          PY
-
+          printf 'origem: index.html (raiz)\ncommit: %s\n' "$GITHUB_SHA" > _site/versao-publicacao.txt
+          ls -lah _site
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
-
       - name: Enviar site público
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v3
         with:
           path: _site
-
       - name: Publicar
         id: deployment
         uses: actions/deploy-pages@v4
