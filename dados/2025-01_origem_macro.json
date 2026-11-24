@@ -1,0 +1,79 @@
+{
+  "schema": 1,
+  "mes": "2025-01",
+  "fonte": "SUSfácilMG — internações realizadas",
+  "indicador": "internacoes_realizadas",
+  "dimensao": "macro_origem",
+  "nivel": "marginal_independente",
+  "situacao": "CANDIDATO_PENDENTE_HOMOLOGACAO",
+  "limite_minimo_grupo": 20,
+  "observacao": "Totais por dimensão calculados separadamente. Não são cruzáveis com modalidade, procedimento, destino ou entre si. Categorias com menos de 20 registros e não classificadas não são publicadas. Não usar as margens para inferir grupos omitidos.",
+  "registros": [
+    [
+      "3101-SUL",
+      5517
+    ],
+    [
+      "3102-CENTRO SUL",
+      3880
+    ],
+    [
+      "3103-CENTRO",
+      32419
+    ],
+    [
+      "3104-JEQUITINHONHA",
+      3120
+    ],
+    [
+      "3105-OESTE",
+      7322
+    ],
+    [
+      "3106-LESTE",
+      3810
+    ],
+    [
+      "3107-SUDESTE",
+      9896
+    ],
+    [
+      "3108-NORTE DE MINAS",
+      12099
+    ],
+    [
+      "3109-NOROESTE",
+      3866
+    ],
+    [
+      "3110-LESTE DO SUL",
+      3753
+    ],
+    [
+      "3111-NORDESTE",
+      4731
+    ],
+    [
+      "3112-TRIANGULO DO SUL",
+      1536
+    ],
+    [
+      "3113-TRIANGULO DO NORTE",
+      10428
+    ],
+    [
+      "3114-VALE DO ACO",
+      4086
+    ],
+    [
+      "3115-EXTREMO SUL",
+      5618
+    ],
+    [
+      "3116-SUDOESTE",
+      7111
+    ]
+  ],
+  "grupos_omitidos": 0,
+  "ha_contagens_omitidas": false
+}

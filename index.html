@@ -64,6 +64,12 @@ J18" disabled style="width:100%;border:1px solid #dce6eb;border-radius:8px;paddi
  </div>
  <p class="hint" id="modalPubNota" style="margin-top:12px">Indicadores de modalidade são independentes dos filtros de território e procedimento acima. Ainda não há cruzamento validado entre essas dimensões na base pública.</p>
 </section>
+<section class="panel" id="consultas-fase2" aria-label="Origem e CID — consultas automáticas separadas">
+ <div class="panel-header"><div><h2>Origem e diagnóstico · Janeiro de 2025</h2><p class="hint">Consultas carregadas automaticamente dos agregados mensais, sem arquivos locais</p></div><span class="tiny-tag">FASE 2 · VISÃO ESTADUAL</span></div>
+ <p class="hint">Estes dois rankings são <strong>independentes</strong> dos filtros de destino, procedimento e modalidade. A origem é a macrorregião do estabelecimento solicitante (PDR na data da extração). Para CID, a consulta é por capítulo (primeira letra do código). Ainda não equivale a pesquisar códigos completos ou combinar CID × município.</p>
+ <div class="viz-grid"><div><h3>Macrorregiões de origem</h3><div id="fase2Origem" class="rank" role="status">Carregando origem…</div></div><div><h3>Diagnósticos por capítulo CID-10</h3><div id="fase2Cid" class="rank" role="status">Carregando CID…</div></div></div>
+ <p id="fase2Status" class="hint">Valores calculados apenas sobre internações realizadas em janeiro de 2025. Agregados candidatos à divulgação sujeitos à homologação institucional.</p>
+</section>
 <div class="metric-grid"><div class="metric"><div class="label">Internações no recorte</div><div class="value" id="n">—</div><div class="foot">Células públicas · cobertura parcial</div></div><div class="metric"><div class="label">Municípios de destino</div><div class="value" id="ndest">—</div><div class="foot">Destinos distintos publicados</div></div><div class="metric"><div class="label">Tempo médio de espera</div><div class="value" id="wait">—</div><div class="foot">Média ponderada, registros válidos</div></div><div class="metric"><div class="label">Internações em até 24h</div><div class="value" id="quick">—</div><div class="foot">Entre registros com espera válida</div></div></div>
 <div class="viz-grid"><section class="panel viz"><div class="viz-header"><h2>Internações ao longo do tempo</h2><span class="tiny-tag">MENSAL</span></div><div id="timeline" class="barset" aria-label="Gráfico de internações mensais"></div><div id="axis" class="chart-axis"><span>—</span><span>—</span></div></section><section class="panel viz"><div class="viz-header"><h2 id="rankingTitle">Principais municípios de destino</h2><span class="tiny-tag">TOP 5</span></div><div id="ranking" class="rank"><span class="loading">Carregando ranking…</span></div></section></div>
 <section class="panel"><div class="panel-header"><div><h2>Detalhamento da consulta</h2><div class="hint">Destino × procedimento · dados públicos publicados</div></div><span id="rowsinfo" class="hint">—</span></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Município de destino</th><th>Procedimento</th><th>Macrorregião</th><th>Internações</th></tr></thead><tbody id="tbody"></tbody></table></div></section><p class="footnote">CGIT — Coordenação de Gestão da Informação e Transparência · SUSfácilMG · Os novos indicadores de CID, modalidade e fluxos de origem dependem de publicação revisada com proteção contra reidentificação.</p></section>
@@ -173,6 +179,23 @@ load();
  el('localApply').addEventListener('click',filter);
  el('localMacroO').addEventListener('change',()=>{const i=fields.indexOf('macro_origem'),j=fields.indexOf('municipio_origem_solicitante');let match=rows.filter(r=>!el('localMacroO').value||r[i]===el('localMacroO').value);setOptions('localOrigem',match.map(r=>r[j]));});
  el('localExport').addEventListener('click',()=>{const csv='\ufeffOrigem IBGE;Destino IBGE;Modalidade;Internações\r\n'+summary.map(r=>r.join(';')).join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='fluxos_origem_destino_local.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)});
+})();
+</script>
+<script>
+(async()=>{
+ const root=document.getElementById('consultas-fase2');if(!root)return;
+ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ async function render(path,target){
+  const el=document.getElementById(target),r=await fetch(path,{cache:'no-cache'});
+  if(!r.ok)throw Error(path+' HTTP '+r.status);
+  const d=await r.json();if(d.mes!=='2025-01'||d.nivel!=='marginal_independente'||!Array.isArray(d.registros))throw Error('Formato inválido: '+path);
+  const ranked=[...d.registros].sort((a,b)=>Number(b[1])-Number(a[1])).slice(0,15);
+  if(!ranked.length){el.textContent='Sem grupos publicáveis';return;}
+  const mx=Math.max(...ranked.map(x=>Number(x[1])));
+  el.innerHTML=ranked.map(([nome,n])=>`<div class="rank-row" style="margin:10px 0"><div style="display:flex;justify-content:space-between;gap:8px"><span>${esc(nome)}</span><strong>${Number(n).toLocaleString('pt-BR')}</strong></div><div style="height:8px;background:#e7eef0;border-radius:6px"><div style="width:${Math.max(0,Math.min(100,100*Number(n)/mx))}%;height:8px;background:#158e86;border-radius:6px"></div></div></div>`).join('');
+ }
+ try{await Promise.all([render('dados/2025-01_origem_macro.json','fase2Origem'),render('dados/2025-01_cid_capitulos.json','fase2Cid')]);document.getElementById('fase2Status').textContent+=' Rankings atualizados a partir dos arquivos publicados.'}
+ catch(e){document.getElementById('fase2Status').textContent='Falha ao carregar agregados da fase 2: '+e.message;}
 })();
 </script>
 </body></html>

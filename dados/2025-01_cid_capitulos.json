@@ -1,0 +1,115 @@
+{
+  "schema": 1,
+  "mes": "2025-01",
+  "fonte": "SUSfácilMG — internações realizadas",
+  "indicador": "internacoes_realizadas",
+  "dimensao": "capitulo_cid10",
+  "nivel": "marginal_independente",
+  "situacao": "CANDIDATO_PENDENTE_HOMOLOGACAO",
+  "limite_minimo_grupo": 20,
+  "observacao": "Totais por dimensão calculados separadamente. Não são cruzáveis com modalidade, procedimento, destino ou entre si. Categorias com menos de 20 registros e não classificadas não são publicadas. Não usar as margens para inferir grupos omitidos.",
+  "registros": [
+    [
+      "A",
+      4643
+    ],
+    [
+      "B",
+      563
+    ],
+    [
+      "C",
+      7038
+    ],
+    [
+      "D",
+      3311
+    ],
+    [
+      "E",
+      3377
+    ],
+    [
+      "F",
+      2366
+    ],
+    [
+      "G",
+      2039
+    ],
+    [
+      "H",
+      2053
+    ],
+    [
+      "I",
+      13248
+    ],
+    [
+      "J",
+      10898
+    ],
+    [
+      "K",
+      11646
+    ],
+    [
+      "L",
+      2598
+    ],
+    [
+      "M",
+      2533
+    ],
+    [
+      "N",
+      10082
+    ],
+    [
+      "O",
+      15608
+    ],
+    [
+      "P",
+      3230
+    ],
+    [
+      "Q",
+      597
+    ],
+    [
+      "R",
+      3992
+    ],
+    [
+      "S",
+      12451
+    ],
+    [
+      "T",
+      2983
+    ],
+    [
+      "V",
+      70
+    ],
+    [
+      "W",
+      117
+    ],
+    [
+      "X",
+      341
+    ],
+    [
+      "Y",
+      103
+    ],
+    [
+      "Z",
+      3294
+    ]
+  ],
+  "grupos_omitidos": 1,
+  "ha_contagens_omitidas": true
+}
