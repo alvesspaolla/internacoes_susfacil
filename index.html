@@ -65,8 +65,11 @@ J18" disabled style="width:100%;border:1px solid #dce6eb;border-radius:8px;paddi
  <p class="hint" id="modalPubNota" style="margin-top:12px">Indicadores de modalidade são independentes dos filtros de território e procedimento acima. Ainda não há cruzamento validado entre essas dimensões na base pública.</p>
 </section>
 <section class="panel" id="consultas-fase2" aria-label="Origem e CID — consultas automáticas separadas">
- <div class="panel-header"><div><h2>Origem e diagnóstico · Janeiro de 2025</h2><p class="hint">Consultas carregadas automaticamente dos agregados mensais, sem arquivos locais</p></div><span class="tiny-tag">FASE 2 · VISÃO ESTADUAL</span></div>
+ <div class="panel-header"><div><h2>Origem e diagnóstico · Janeiro de 2025</h2><p class="hint">Consultas carregadas automaticamente dos agregados mensais, sem arquivos locais</p></div><span class="tiny-tag">CONSULTA AUTOMÁTICA · JAN/2025</span></div>
  <p class="hint">Estes dois rankings são <strong>independentes</strong> dos filtros de destino, procedimento e modalidade. A origem é a macrorregião do estabelecimento solicitante (PDR na data da extração). Para CID, a consulta é por capítulo (primeira letra do código). Ainda não equivale a pesquisar códigos completos ou combinar CID × município.</p>
+ <div class="viz-grid" style="margin:16px 0;align-items:end"><div><label for="buscaMacroFinal" style="display:block;font-weight:650;margin-bottom:6px">Buscar macrorregiões de origem</label><textarea id="buscaMacroFinal" rows="2" style="width:100%;min-height:58px;padding:10px;border:1px solid #cbd5e1;border-radius:8px" placeholder="Cole nomes ou códigos de macrorregiões (um por linha)"></textarea></div><div><label for="buscaCidFinal" style="display:block;font-weight:650;margin-bottom:6px">Buscar capítulos CID-10</label><textarea id="buscaCidFinal" rows="2" style="width:100%;min-height:58px;padding:10px;border:1px solid #cbd5e1;border-radius:8px" placeholder="Ex.: I, J, O ou I21, J18 (agrupa apenas pela letra)"></textarea></div></div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><button type="button" class="btn" id="aplicarBuscaFinal">Pesquisar nos agregados</button><button type="button" class="btn secondary" id="limparBuscaFinal">Limpar pesquisas</button><button type="button" class="btn secondary" id="exportarResumoFinal">Exportar resultados CSV</button></div>
+ <p class="hint" id="avisoBuscaFinal" role="status">A pesquisa CID funciona por capítulo (primeira letra), não por código completo. Resultados independentes, exclusivamente janeiro/2025.</p>
  <div class="viz-grid"><div><h3>Macrorregiões de origem</h3><div id="fase2Origem" class="rank" role="status">Carregando origem…</div></div><div><h3>Diagnósticos por capítulo CID-10</h3><div id="fase2Cid" class="rank" role="status">Carregando CID…</div></div></div>
  <p id="fase2Status" class="hint">Valores calculados apenas sobre internações realizadas em janeiro de 2025. Agregados candidatos à divulgação sujeitos à homologação institucional.</p>
 </section>
@@ -196,6 +199,23 @@ load();
  }
  try{await Promise.all([render('dados/2025-01_origem_macro.json','fase2Origem'),render('dados/2025-01_cid_capitulos.json','fase2Cid')]);document.getElementById('fase2Status').textContent+=' Rankings atualizados a partir dos arquivos publicados.'}
  catch(e){document.getElementById('fase2Status').textContent='Falha ao carregar agregados da fase 2: '+e.message;}
+})();
+</script>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id);
+const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
+const fmt=n=>Number(n).toLocaleString('pt-BR');
+const escapeHTML=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let macro=null,cid=null,shownMacro=[],shownCid=[];
+const terms=v=>v.split(/[\n\r;,\t]+/).map(norm).filter(Boolean);
+function select(rows,termsInput,isCID){if(!termsInput.length)return rows.slice();return rows.filter(([key])=>termsInput.some(t=>isCID?norm(key)===((t.match(/[A-Z]/)||[])[0]||''):norm(key).includes(t)));}
+function paint(id,rows){const el=$(id);if(!rows.length){el.textContent='Nenhum grupo encontrado neste agregado.';return;}const top=rows.slice().sort((a,b)=>b[1]-a[1]);const high=top[0][1]||1;el.innerHTML=top.map(([k,n])=>'<div class="rank-row" style="margin:9px 0"><div style="display:flex;justify-content:space-between;gap:10px"><span>'+escapeHTML(k)+'</span><strong>'+fmt(n)+'</strong></div><div style="background:#e2e8f0;border-radius:6px;height:7px;margin-top:4px"><div style="background:#198f86;height:7px;border-radius:6px;width:'+(100*n/high).toFixed(2)+'%"></div></div></div>').join('');}
+function run(){if(!macro||!cid)return;const mt=terms($('buscaMacroFinal').value),ct=terms($('buscaCidFinal').value);shownMacro=select(macro.registros,mt,false);shownCid=select(cid.registros,ct,true);paint('fase2Origem',shownMacro);paint('fase2Cid',shownCid);$('avisoBuscaFinal').textContent=shownMacro.length+' macrorregiões e '+shownCid.length+' capítulos CID-10 encontrados. CID pesquisado somente por capítulo; não há cruzamento entre os resultados, nem com outros filtros.';}
+$('aplicarBuscaFinal').addEventListener('click',run);
+$('limparBuscaFinal').addEventListener('click',()=>{$('buscaMacroFinal').value='';$('buscaCidFinal').value='';run();});
+$('exportarResumoFinal').addEventListener('click',()=>{if(!macro||!cid)return;const csv=['\uFEFFDimensão;Grupo;Internações;Período;Nota','Origem (macro);'+ '"'+''+'"'];csv.pop();for(const [group,n] of shownMacro)csv.push('Origem macro;"'+String(group).replace(/"/g,'""')+'";'+n+';2025-01;Margem independente');for(const [group,n] of shownCid)csv.push('Capítulo CID-10;"'+String(group).replace(/"/g,'""')+'";'+n+';2025-01;Margem independente');const url=URL.createObjectURL(new Blob([csv.join('\r\n')],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='origem_cid_janeiro_2025_agregados.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+Promise.all(['dados/2025-01_origem_macro.json','dados/2025-01_cid_capitulos.json'].map(async p=>{const r=await fetch(p,{cache:'no-cache'});if(!r.ok)throw Error(p+': HTTP '+r.status);return r.json()})).then(([m,c])=>{if(m.nivel!=='marginal_independente'||c.nivel!=='marginal_independente')throw Error('Dados incompatíveis');macro=m;cid=c;run();}).catch(e=>{$('avisoBuscaFinal').textContent='Falha no carregamento: '+e.message;});
 })();
 </script>
 </body></html>
